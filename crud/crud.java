@@ -1,7 +1,11 @@
-public class crud{
+/*
+Classe CRUD - Realiza Operacoes CRUD de Arquivo
+*/
+class crud{
+   //atributos
+   byte lapide;
+   short tam;
+   byte[] objeto;
+   
 
-   public static void main(String[] args){
-      byte x = -1;
-      System.out.println(x);
-   }
 }
