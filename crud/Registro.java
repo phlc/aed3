@@ -21,9 +21,9 @@ interface Registro{
    
    /*
    setID - atribui um ID para um objeto
-   @param int id
+   @param int n 
    */
-   public void setID();
+   public void setID(int n);
 
    /*
    toByteArray - retorna o conteudo do objeto com byte[]
@@ -35,6 +35,6 @@ interface Registro{
    fromByteArray - preenche o objeto a partir de um byte[]
    @param byte[] ba
    */
-   public void fromGyteArray(byte[] ba) throws IOException;
+   public void fromByteArray(byte[] ba) throws IOException;
 
 }
