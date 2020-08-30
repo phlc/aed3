@@ -46,7 +46,7 @@ class crud <T extends Registro>{
       //testa se arquivo do tipo crud
       try{
          String nome = arq.readUTF();
-         if (!nome.equals("CRUD")
+         if (!nome.equals("CRUD"))
             throws new Exception("Arquivo !CRUD");
       }
       catch (Exception e){
