@@ -13,7 +13,7 @@ Registros
 import java.lang.reflect.Constructor;
 import java.io.RandomAccessFile;
 
-class crud <T extends Registro>{
+class CRUD <T extends Registro>{
 //atributos da classe
 
 //atributos
@@ -21,7 +21,7 @@ class crud <T extends Registro>{
    private String file;
 
 //construtor
-   crud(Constructor<T> constructor, String file){
+   CRUD(Constructor<T> constructor, String file){
       this.constructor = constructor;
       this.file = file;
       RandomAccessFile arq;      
