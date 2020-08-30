@@ -20,21 +20,24 @@ class Livro implements Registro{
 
 //atributos
    private int id;
-   private String nome;
-   private String autor;
-   private float preco;
+   public String nome;
+   public String autor;
+   public float preco;
    private DecimalFormat df = new DecimalFormat("#,##0.00");
 
 //contrutores
-   Livro(int i, String n, String a, float p){
+   public Livro(int i, String n, String a, float p){
       this.id = i;
       this.nome = n;
       this.autor = a;
       this.preco = p;
    }
 
-   Livro(){
-      this(-1, "vazio", "vazio", 0);
+   public Livro(){
+      this.id = -1;
+      this.nome = "vazio";
+      this.autor = "vazio";
+      this.preco = 0.0F;
    }
 
 //metodos
@@ -92,7 +95,7 @@ class Livro implements Registro{
       String resp = "\nID: "+this.id;
       resp = resp + "\nNome: "+this.nome;
       resp = resp + "\nAutor: "+this.autor;
-      resp = resp + "\nPreço: "+(df.format(this.preco));
+      resp = resp + "\nPreço: R$"+(df.format(this.preco)+"\n");
       return(resp);
    }
 

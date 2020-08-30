@@ -3,7 +3,7 @@ import java.io.*;
 public class Teste {
 
   // Arquivo declarado fora de main() para poder ser usado por outros métodos
-  private static CRUD arqLivros;
+  private static CRUD<Livro> arqLivros;
 
   public static void main(String[] args) {
 
@@ -16,8 +16,8 @@ public class Teste {
     try {
 
       // Abre (cria) o arquivo de livros
-      new File("livros.db").delete();  // apaga o arquivo anterior
-      arqLivros = new CRUD<>(Livro.class.getConstructor(), "livros.db");
+//      new File("livros.db").delete();  // apaga o arquivo anterior
+      arqLivros = new CRUD<Livro>(Livro.class.getConstructor(), "livros.db");
 
       // Insere os três livros
       id1 = arqLivros.create(l1); 
