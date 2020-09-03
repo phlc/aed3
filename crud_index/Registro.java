@@ -37,4 +37,10 @@ interface Registro{
    */
    public void fromByteArray(byte[] ba) throws IOException;
 
+   /*
+   chaveSecundaria - retorna a chave secundaria;
+   @return String da chave secundaria
+   */
+   public String chaveSecundaria();
+   
 }
