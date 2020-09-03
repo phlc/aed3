@@ -53,9 +53,6 @@ class CRUD <T extends Registro>{
          
          //Escreve o proximo id do arquivo
          arq.writeInt(1);
-
-         //voltar cursor para inicio
-         arq.seek(0);
       }
       
       //criacao dos indices direto e indireto
@@ -69,20 +66,9 @@ class CRUD <T extends Registro>{
    @param T objeto
    @return int id
    */
-   public int create(T objeto) throws Exception{
-      //testar arquivo
-      RandomAccessFile arq = new RandomAccessFile(this.file, "r");
-      arq.seek(0);
-      String nome = arq.readUTF();
-      if (!nome.equals("CRUD"))
-         throw new Exception("Arquivo !CRUD");
-      arq.close();
-      
-      //abrir para escrita
-      arq = new RandomAccessFile(this.file, "rw");
-      
+   public int create(T objeto) throws Exception{      
       //ler proximo id
-      arq.seek(6);
+      arq.seek(NEXT_ID);
       final int nextId = arq.readInt();
       
       //atualizar id no objeto
@@ -94,15 +80,21 @@ class CRUD <T extends Registro>{
       short tam = (short)ba.length;
       
       //escrever proximo ID
-      arq.seek(6);
+      arq.seek(NEXT_ID);
       arq.writeInt(nextId + 1);
 
       //escrever novo registro
-      arq.seek(arq.length());
+      long pos = arq.length();
+      arq.seek(pos);
       arq.writeByte(lapide);
       arq.writeShort(tam);
       arq.write(ba);
-      arq.close();
+      
+      //escrever indice direto
+      direto.create(nextId, pos);
+
+      //escrever indice indireto
+      indireto.create(objeto.chaveSecundaria(), nextId);
 
       return(nextId);
    }
@@ -112,36 +104,39 @@ class CRUD <T extends Registro>{
    @param int id
    @return T objeto
    */
-   public T read(int id) throws Exception{
-      //abrir arquivo para leitura
-      RandomAccessFile arq = new RandomAccessFile(this.file, "r");
-
-      //ir para inicio dos registros
-      arq.seek(10);
-
+   public T read(int id) throws Exception{ 
       //variaveis
       T objeto = this.constructor.newInstance();
       boolean found = false;
 
-      //ler ate achar ou fim
-      try{
-         while(!found){
-            byte lapide = arq.readByte();
-            short tam = arq.readShort();
-            byte[] ba = new byte[tam];
-            arq.read(ba);
-            objeto.fromByteArray(ba);
-            if (lapide==0 && id==objeto.getID())
-               found = true;
-         }
-      }
-      catch(EOFException end){}
+      //ler posicao do indice direto
+      long pos = direto.read(id);
       
-      if(!found)
+      //posicao encontrada
+      if(pos != -1){
+         arq.seek(pos);
+         byte lapide = arq.readByte();
+         short tam = arq.readShort();
+         byte[] ba = new byte[tam];
+         arq.read(ba);
+         objeto.fromByteArray(ba);
+      }
+      
+      //posicao nao encontrada
+      else
          objeto = null;
 
-      arq.close();
       return(objeto);
+   }
+
+   /*
+   read - Ler um objeto do arquivo
+   @param String chaveSecundaria
+   @return T objeto
+   */
+   public T read(String chave) throws Exception{
+      int id = indireto.read(chave);
+      return (read(id));
    }
    
    /*
@@ -149,36 +144,29 @@ class CRUD <T extends Registro>{
    @param T objeto
    @return boolean true (sucesso) false (falha)
    */
-   public boolean update(T objeto) throws Exception{
-      //testar arquivo
-      RandomAccessFile arq = new RandomAccessFile(this.file, "r");
-      arq.seek(0);
-      String nome = arq.readUTF();
-      if (!nome.equals("CRUD"))
-         throw new Exception("Arquivo !CRUD");
-      arq.close();
+   public boolean update(T objeto) throws Exception{ 
+      //id objeto
+      int id = objeto.getID()
       
-      //abrir para escrita
-      arq = new RandomAccessFile(this.file, "rw");
-      
-      //objeto antigo
-      int id = objeto.getID();
-      T antigo = read(id);
-      byte[] baAntigo = antigo.toByteArray();
+      //posicao do objeto no arquivo
+      long pos = direto.read(id);
+
+      //obter tamanho dos dados do objeto
+      arq.seek(pos+1);
+      short tam = arq.readShort();
 
       //objeto novo
       byte[] baNovo = objeto.toByteArray();
    
       //novo registro maior que o anterior
-      if(baAntigo.length < baNovo.length){
-         if(delete(id)){
-            arq.seek(arq.length());
-            arq.writeByte(0);
-            arq.writeShort((short)baNovo.length);
-            arq.write(baNovo);
-         }
-         else
-            throw new Exception("Erro ao deletar registro menor");
+      if(tam < baNovo.length){
+         //marcar arquivo como deletado
+         arq.seek(pos);
+         arq.writeByte(1);
+         
+         //criar novo registro
+         pos = arq.length;
+------          
       }      
       
       //novo registro menor ou igual ao anterior
