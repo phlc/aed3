@@ -99,4 +99,12 @@ class Livro implements Registro{
       return(resp);
    }
 
+   /*
+   chaveSecundaria - retorna a chave secundaria
+   @return String da chave secundaria
+   */
+   public String chaveSecundaria(){
+      return(this.nome);
+   }
+
 }
