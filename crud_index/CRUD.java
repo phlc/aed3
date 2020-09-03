@@ -1,9 +1,10 @@
 /*
 Classe CRUD - Realiza Operacoes CRUD de Arquivo
+Versão 2.0 - Arquivos Indexados
 Cabecalho
-   byte 0-5 tipo do arquivo "CRUD"
-   byte 6-9 proximo id (int) inicio em 1
-Registros comecao byte 10
+   byte 0-8 tipo do arquivo "CRUD2.0"
+   byte 9-12 proximo id (int) inicio em 1
+Registros comecam byte 13
    lapide - 1 byte
    indicador de tamanho - 1 short
    conteudo = byte[]
@@ -13,49 +14,53 @@ import java.io.FileNotFoundException;
 import java.io.EOFException;
 import java.lang.reflect.Constructor;
 import java.io.RandomAccessFile;
+import java.io.File;
+import aed3.*;
 
 class CRUD <T extends Registro>{
 //atributos da classe
+   private static final long NEXT_ID = 13L;
+   private static final String NAME_VERSION = "CRUD2.0"
 
 //atributos
    private Constructor<T> constructor; 
-   private String file;
+   private RandomAccessFile arq;
+   private HashExtensivel direto;
+   private ArvoreBMais_String_int indireto;
 
 //construtor
    CRUD(Constructor<T> constructor, String file) throws Exception{
-      this.constructor = constructor;
-      this.file = file;
-      RandomAccessFile arq;      
 
-      //Verificar se arquivo com nome ja existe
-      try{
-         arq = new RandomAccessFile (this.file, "r");
+
+      //Verificar se arquivo de dados com nome ja existe
+      if (new File(file).exists()){
+         
+         //Verifica se o arquivo existente do tipo NAME_VERSION
+         arq = new RandomAccessFile (file, "rws");
+         arq.seek(0L);
+         String nome = arq.readUTF();
+         if (!nome.equals(NAME_VERSION))
+            throw new Exception("Arquivo !CRUD2.0");
+         
       }
+
       //Se nao exisitr criar
-      catch (FileNotFoundException novoArq){
-         arq = new RandomAccessFile (this.file, "rw");
+      else{ 
+         arq = new RandomAccessFile (file, "rws");
          
-         //Escreve CRUD no cabecalho para identificar o tipo do arquivo
-         arq.writeUTF("CRUD");
+         //Escreve NAME_VERSION no cabecalho para identificar o tipo do arquivo
+         arq.writeUTF(NAME_VERSION);
          
-         //Escreve o proximo id do arquivo (offset 6)
+         //Escreve o proximo id do arquivo
          arq.writeInt(1);
 
          //voltar cursor para inicio
          arq.seek(0);
       }
-      //testa se arquivo do tipo crud
-      try{
-         arq.seek(0);
-         String nome = arq.readUTF();
-         if (!nome.equals("CRUD"))
-            throw new Exception("Arquivo !CRUD");
-      }
-      catch (Exception e){
-         System.out.println(e);
-         arq.close();
-         this.file = null;
-      }
+      
+      //criacao dos indices direto e indireto
+      direto = new HashExtensivel(4, (file+".diretorio"), (file+".cestos"));
+      indireto = new ArvoreBMais_String_int(100, (file+".arvore"));
    }
 
 //metodos
