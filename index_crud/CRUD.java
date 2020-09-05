@@ -19,7 +19,7 @@ import aed3.*;
 
 class CRUD <T extends Registro>{
 //atributos da classe
-   private static final long NEXT_ID = 13L;
+   private static final long NEXT_ID = 9L;
    private static final String NAME_VERSION = "CRUD2.0";
 
 //atributos
@@ -30,7 +30,8 @@ class CRUD <T extends Registro>{
 
 //construtor
    CRUD(Constructor<T> constructor, String file) throws Exception{
-
+      //Construtor
+      this.constructor = constructor;
 
       //Verificar se arquivo de dados com nome ja existe
       if (new File(file).exists()){
@@ -107,11 +108,9 @@ class CRUD <T extends Registro>{
    public T read(int id) throws Exception{ 
       //variaveis
       T objeto = this.constructor.newInstance();
-      boolean found = false;
 
       //ler posicao do indice direto
-      long pos = direto.read(id);
-      
+      long pos = direto.read(id);    
       //posicao encontrada
       if(pos != -1){
          arq.seek(pos);
@@ -120,11 +119,16 @@ class CRUD <T extends Registro>{
          byte[] ba = new byte[tam];
          arq.read(ba);
          objeto.fromByteArray(ba);
+         
+         //verificar registro valido
+         if(lapide !=0)
+            objeto = null;
       }
       
       //posicao nao encontrada
-      else
+      else{
          objeto = null;
+      }
 
       return(objeto);
    }
@@ -167,6 +171,7 @@ class CRUD <T extends Registro>{
          
          //criar novo registro
          pos = arq.length();
+         arq.seek(pos);
          arq.writeByte(0);
          arq.writeShort(tamNovo);
          arq.write(baNovo);

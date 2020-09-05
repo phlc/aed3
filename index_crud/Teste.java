@@ -16,7 +16,7 @@ public class Teste {
     try {
 
       // Abre (cria) o arquivo de livros
-//      new File("livros.db").delete();  // apaga o arquivo anterior
+      new File("livros.db").delete();  // apaga o arquivo anterior
       arqLivros = new CRUD<Livro>(Livro.class.getConstructor(), "livros.db");
 
       // Insere os três livros
