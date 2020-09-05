@@ -27,9 +27,13 @@ public class Teste {
       id3 = arqLivros.create(l3);
       l3.setID(id3);
 
-      // Busca por dois livros
+      // Busca por dois livros pelo ID
       System.out.println(arqLivros.read(id3));
       System.out.println(arqLivros.read(id1));
+
+      // Busca por dois livros pela chave secundaria
+      System.out.println(arqLivros.read(l2.chaveSecundaria()));
+      System.out.println(arqLivros.read(l3.chaveSecundaria()));
 
       // Altera um livro para um tamanho maior e exibe o resultado
       l2.autor = "Richard Burton Matheson";
