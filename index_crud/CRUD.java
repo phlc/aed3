@@ -146,7 +146,7 @@ class CRUD <T extends Registro>{
    */
    public boolean update(T objeto) throws Exception{ 
       //id objeto
-      int id = objeto.getID()
+      final int id = objeto.getID()
       
       //posicao do objeto no arquivo
       long pos = direto.read(id);
@@ -157,16 +157,21 @@ class CRUD <T extends Registro>{
 
       //objeto novo
       byte[] baNovo = objeto.toByteArray();
+      short tamNovo = ba.Novo.length;
    
       //novo registro maior que o anterior
-      if(tam < baNovo.length){
+      if(tam < tamNovo){
          //marcar arquivo como deletado
          arq.seek(pos);
          arq.writeByte(1);
          
          //criar novo registro
          pos = arq.length;
-------          
+         arq.writeByte(0);
+         arq.writeShort(tamNovo);
+         arq.writeBytes(baNovo);
+         direto.update(id, pos);
+         indireto.update(objeto.chaveSecundaria(), id);
       }      
       
       //novo registro menor ou igual ao anterior
