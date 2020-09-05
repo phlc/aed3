@@ -20,13 +20,13 @@ import aed3.*;
 class CRUD <T extends Registro>{
 //atributos da classe
    private static final long NEXT_ID = 13L;
-   private static final String NAME_VERSION = "CRUD2.0"
+   private static final String NAME_VERSION = "CRUD2.0";
 
 //atributos
    private Constructor<T> constructor; 
    private RandomAccessFile arq;
    private HashExtensivel direto;
-   private ArvoreBMais_String_int indireto;
+   private ArvoreBMais_String_Int indireto;
 
 //construtor
    CRUD(Constructor<T> constructor, String file) throws Exception{
@@ -57,7 +57,7 @@ class CRUD <T extends Registro>{
       
       //criacao dos indices direto e indireto
       direto = new HashExtensivel(4, (file+".diretorio"), (file+".cestos"));
-      indireto = new ArvoreBMais_String_int(5, (file+".arvore"));
+      indireto = new ArvoreBMais_String_Int(5, (file+".arvore"));
    }
 
 //metodos
@@ -146,7 +146,7 @@ class CRUD <T extends Registro>{
    */
    public boolean update(T objeto) throws Exception{ 
       //id objeto
-      final int id = objeto.getID()
+      final int id = objeto.getID();
       
       //posicao do objeto no arquivo
       long pos = direto.read(id);
@@ -157,7 +157,7 @@ class CRUD <T extends Registro>{
 
       //objeto novo
       byte[] baNovo = objeto.toByteArray();
-      short tamNovo = ba.Novo.length;
+      short tamNovo = (short) baNovo.length;
    
       //novo registro maior que o anterior
       if(tam < tamNovo){
@@ -166,10 +166,10 @@ class CRUD <T extends Registro>{
          arq.writeByte(1);
          
          //criar novo registro
-         pos = arq.length;
+         pos = arq.length();
          arq.writeByte(0);
          arq.writeShort(tamNovo);
-         arq.writeBytes(baNovo);
+         arq.write(baNovo);
          direto.update(id, pos);
          indireto.update(objeto.chaveSecundaria(), id);
       }      
@@ -177,8 +177,8 @@ class CRUD <T extends Registro>{
       //novo registro menor ou igual ao anterior
       else{
          arq.seek(pos+3);
-         arq.writeBytes(baNovo);
-         indireto.update(objeto.chaveSecundaaria(), id);
+         arq.write(baNovo);
+         indireto.update(objeto.chaveSecundaria(), id);
       }
       return(true);
    }
