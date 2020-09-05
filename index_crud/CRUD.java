@@ -176,31 +176,10 @@ class CRUD <T extends Registro>{
       
       //novo registro menor ou igual ao anterior
       else{
-         arq.seek(10);
-         T buffer = this.constructor.newInstance();
-         boolean found = false;
-
-         //ler ate achar ou fim
-         try{
-            while(!found){
-               byte lapide = arq.readByte();
-               short tam = arq.readShort();
-               byte[] ba = new byte[tam];
-               arq.read(ba);
-               buffer.fromByteArray(ba);
-               if (lapide==0 && id==buffer.getID())
-                  found = true;
-            }
-         }
-         catch(EOFException end){}
-         
-         //verificar se registro foi encontrado
-         if(found){
-            arq.seek(arq.getFilePointer() - baAntigo.length);
-            arq.write(baNovo);
-         }
+         arq.seek(pos+3);
+         arq.writeBytes(baNovo);
+         indireto.update(objeto.chaveSecundaaria(), id);
       }
-      arq.close();
       return(true);
    }
 
@@ -209,50 +188,32 @@ class CRUD <T extends Registro>{
    @param int id
    @return boolean true (sucesso) false (falha)
    */
-   public boolean delete(int id) throws Exception{
-      //testar arquivo
-      RandomAccessFile arq = new RandomAccessFile(this.file, "r");
-      arq.seek(0);
-      String nome = arq.readUTF();
-      if (!nome.equals("CRUD"))
-         throw new Exception("Arquivo !CRUD");
-      arq.close();
-      
-      //abrir para escrita
-      arq = new RandomAccessFile(this.file, "rw");
-      
+   public boolean delete(int id) throws Exception{  
       //achar registro
-      arq.seek(10);
-      T objeto = this.constructor.newInstance();
-      boolean found = false;
+      long pos = direto.read(id);
+      arq.seek(pos);
 
-      //ler ate achar ou fim
-      try{
-         while(!found){
-            byte lapide = arq.readByte();
-            short tam = arq.readShort();
-            byte[] ba = new byte[tam];
-            arq.read(ba);
-            objeto.fromByteArray(ba);
-            if (lapide==0 && id==objeto.getID())
-               found = true;
-         }
-      }
-      catch(EOFException end){} 
-
-      //verificar se registro foi encontrado
-      if(found){
-         byte[] ba = objeto.toByteArray();
-         arq.seek(arq.getFilePointer() - (ba.length + 3));
-         arq.writeByte(1);
-      }
-      //registro nao encontrado
-      else
-         throw new Exception("Registro !Encontrado");
+      //carregar para objeto 
+      T objeto = this.constructor.newInstance(); 
+      byte lapide = arq.readByte();
+      short tam = arq.readShort();
+      byte[] ba = new byte[tam];
+      arq.read(ba);
+      objeto.fromByteArray(ba);
       
-      arq.close();
+      //verificar se registro ja esta apagado
+      if(lapide != 0)
+         throw new Exception("Registro inexistente");
+      else{
+         
+         //apagar registro
+         arq.seek(pos);
+         arq.writeByte(1);
+         
+         //apagar indice direto
+         direto.delete(id);
+         indireto.delete(objeto.chaveSecundaria());
+      } 
       return(true);
    }
-
-
 }
