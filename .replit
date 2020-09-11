@@ -1,0 +1,2 @@
+language = "undefined"
+run = "cd ./index_crud/; rm livros.db*; javac Teste.java; java Teste "
